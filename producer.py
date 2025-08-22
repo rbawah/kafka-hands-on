@@ -1,21 +1,31 @@
 from kafka import KafkaProducer
 import time
 
-# connect a producer to the kafka_broker we started in docker
-producer = KafkaProducer(bootstrap_servers = "localhost:9092")
+from serializer import json_serializer
 
-messages = [
+# connect a producer to the kafka_broker we started in docker
+producer = KafkaProducer(
+    bootstrap_servers = "localhost:9092",
+    value_serializer = json_serializer
+    )
+
+message_data = [
     "Hello, Kafka",
     "This is my first message",
-    "This is my second message",
-    "and yet, another message"
+    "Second message",
+    "And yet, another message"
 ]
 
 # send 5 test messages
-for message in messages:
-    message = f"{message}".encode("utf-8")
-    producer.send("test-topic", message)
-    print(f"Sent: {message.decode()}")
+for idx, data in enumerate(message_data):
+    message = {
+        "id": idx,
+        "event": "test_event",
+        "data": data
+    }
+
+    producer.send("test-topic", value=message)
+    print(f"Sent: {message}")
     time.sleep(1)
 
 producer.flush()
